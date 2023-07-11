@@ -32,6 +32,7 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private Session server;
     private PacketDirection direction;
 
+
     public NetworkPacketHandler(MinecraftProxy client, Session server, PacketDirection direction) {
         this.client = client;
         this.server = server;
@@ -45,7 +46,8 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<ByteBuf> {
         msg.duplicate().readBytes(bytes);
         ByteBuf copiedBuffer = Unpooled.copiedBuffer(bytes);
         PacketBuffer packetBuffer = new PacketBuffer(copiedBuffer);
-        System.out.println( ANSI.ANSI_GREEN + this.direction.getName() + ": " + this.client.state.getDisplayName() + ": " +Arrays.toString(packetBuffer.array()) + ANSI.ANSI_RESET);
+
+        System.out.println( ANSI.ANSI_GREEN + this.direction.getName() + ": " + this.client.state.getDisplayName() + ": " +Arrays.toString(copiedBuffer.array()) + ANSI.ANSI_RESET);
         int packetId = packetBuffer.readVarIntFromBuffer();
 
         if (this.direction == PacketDirection.SERVERBOUND) {
@@ -103,11 +105,9 @@ public class NetworkPacketHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 }
             } else if (this.client.state == ProtocolState.LOGIN) {
                 if (packetId == 0x00) {
-                    ReferenceCountUtil.release(msg);
                     this.server.disconnect(); //that's the disconnect packet
                 }
                 if (packetId == 0x01) {
-                    ReferenceCountUtil.release(msg);
                     //There we receive the encryption start packet and we need to send the encryption response and join session on mojang api
                     String serverId = packetBuffer.readStringFromBuffer(5);
                     byte[] publicKeyBytes = packetBuffer.readByteArray();

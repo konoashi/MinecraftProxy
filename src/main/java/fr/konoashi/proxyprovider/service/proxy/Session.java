@@ -16,6 +16,8 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.tinylog.Logger;
 
 import javax.crypto.SecretKey;
@@ -60,6 +62,7 @@ public class Session {
             oclass = NioSocketChannel.class;
             lazyloadbase = CLIENT_NIO_EVENTLOOP;
         }
+
 
         (new Bootstrap()).group((EventLoopGroup)lazyloadbase.getValue()).handler(new ChannelInitializer<Channel>() {
             protected void initChannel(Channel ch) throws Exception {
@@ -182,15 +185,17 @@ public class Session {
     }
 
     public void sendToClient(ByteBuf packet) {
-        try {
-            clientChannel.writeAndFlush(packet).sync();
-        } catch (Exception err){
-            err.printStackTrace();
+        if(clientChannel.isWritable()) {
+            try {
+                clientChannel.writeAndFlush(packet).sync();
+            } catch (Exception err) {
+                err.printStackTrace();
+            }
         }
     }
 
     public void sendToServer(ByteBuf packet) {
-        if(serverChannel != null) {
+        if(serverChannel.isWritable()) {
             try {
                 serverChannel.writeAndFlush(packet).sync();
             } catch (Exception err){

@@ -11,6 +11,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.tinylog.Logger;
 
 public class MinecraftProxy {
@@ -22,6 +24,8 @@ public class MinecraftProxy {
     private EventLoopGroup group;
     public ProtocolState state = ProtocolState.HANDSHAKING;
     private Session session;
+
+    static final EventExecutorGroup group2 = new DefaultEventExecutorGroup(16);
 
     public MinecraftProxy(int listenPort, String targetHost, int targetPort) {
         this.listenPort = listenPort;
